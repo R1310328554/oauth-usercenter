@@ -42,7 +42,7 @@ public abstract class BaseController {
             response.addCookie(thirdType);
             response.addCookie(access_tokenCookie);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("系统异常： ", e);
         }
     }
 
@@ -51,7 +51,7 @@ public abstract class BaseController {
     public JSONObject getUserInfo(@CookieValue(value = "aimee-test-token", required = false)String access_token
             , @CookieValue(value = "thirdType", required = false)String thirdType
             , @CookieValue(value = "uid", required = false)String uid) {
-        log.info(thirdType + " getUserInfo " + access_token);
+        log.info("获取用户： " + thirdType + "," + access_token);
         String jws_token = "";
         try {
             // Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
@@ -63,7 +63,7 @@ public abstract class BaseController {
                 String userId = split[1];
                 oauthUser = userService.findUserByUserId(userId);
                 if (oauthUser == null) {
-                    JSONObject wxUser = getUser(access_token, userId, jws_token);
+                    JSONObject wxUser = getUser(userId, jws_token);
                     oauthUser = wxUser;
                 }
             }
@@ -74,7 +74,8 @@ public abstract class BaseController {
             return ret;
         } catch (Exception e) {
             //don't trust the JWT!
-            e.printStackTrace();
+            //e.printStackTrace();
+            log.error("系统异常： ", e);
             JSONObject ret = new JSONObject();
             ret.put("msg", "err");
             ret.put("data", e);
@@ -83,7 +84,7 @@ public abstract class BaseController {
         }
     }
 
-    protected JSONObject getUser(String access_token, String userId, String jws_token) {
+    protected JSONObject getUser(String userId, String jws_token) {
         return null;
     }
 
@@ -100,7 +101,7 @@ public abstract class BaseController {
     @ResponseBody
     public JSONObject logout(@CookieValue(value = "aimee-test-token", required = false)String access_token
             , @CookieValue(value = "thirdType", required = false)String thirdType, HttpServletResponse response) {
-        log.info("Github .logout");
+        log.info("注销登录： access_token = [" + access_token + "], thirdType = [" + thirdType + "], response = [" + response + "]");
         Cookie access_tokenCookie = new Cookie("aimee-test-token", "");
         access_tokenCookie.setMaxAge(1000*60*60*24);
         access_tokenCookie.setPath("/");

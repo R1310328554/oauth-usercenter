@@ -1,5 +1,5 @@
-
 package com.lk.learn.oauth.usercenter.controller;
+
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.lk.learn.oauth.usercenter.entity.OauthUser;
@@ -19,20 +19,18 @@ public class GithubController extends BaseController {
      */
     @RequestMapping("/login")
     public void login(@RequestParam("code") String code, HttpServletResponse response) {
-        log.info("Github .callback code " + code);
+        log.info("Github授权码回调，code： " + code);
         String redirect = "https://github.com/login/oauth/access_token?client_id=ee0e0710193b7cac1e68&redirect_uri=http://192.168.1.103:8999/v1/github/user/login&client_secret=d544353486c9e083d9c7437187236e8f191c6632&code=";
 //        String accessTokenUrl = String.format(redirect, code);
         String accessTokenUrl = redirect +  code;
-        log.info("accessTokenUrl = " + accessTokenUrl);
         HttpRequest request = HttpRequest.post(accessTokenUrl);
         request.contentType("application/json");
         request.accept("application/json");
         HttpResponse accessTokenResp = request.send();
         String text = accessTokenResp.bodyText();
-        log.info("HttpResponse text = " + text);
+        log.info("Github access_token回调 = " + text);
 
         JSONObject jsonObject = JSON.parseObject(text);
-        log.info("jsonObject = " + jsonObject);
         if (!"".equals(jsonObject.getString("error"))) {
         }
 
@@ -51,13 +49,13 @@ public class GithubController extends BaseController {
         httpRequest.timeout(30 * 1000); // 超时 设置长一点， 因为“墙”
         HttpResponse userinfoResp = httpRequest.send();
         String bodyText = userinfoResp.charset("utf-8").bodyText();
+        log.info("Github用户信息 = " + bodyText);
         OauthUser oauthUser = JSON.parseObject(bodyText, OauthUser.class);
         oauthUser.setAvatar(oauthUser.getAvatar_url());
         oauthUser.setUserId(oauthUser.getId());
         oauthUser.setUsername(oauthUser.getLogin());
         oauthUser.setCreated_at(oauthUser.getCreateDate());
         oauthUser.setUserInfo(bodyText);
-        log.info("GithubUser = " + oauthUser);
         userService.saveUser(oauthUser);
 
         generateCookie(response, access_token, oauthUser, "github");
@@ -69,14 +67,16 @@ public class GithubController extends BaseController {
     }
 
     @Override
-    protected JSONObject getUser(String access_token, String userId, String jws_token) {
+    protected JSONObject getUser(String userId, String access_token) {
+        System.out.println("Github.获取用户: userId = [" + userId + "], access_token = [" + access_token + "]");
         HttpRequest httpRequest = HttpRequest.get("https://api.github.com/user");
         httpRequest.contentType("application/json");
         httpRequest.accept("application/json");
-        httpRequest.header("Authorization", "Bearer " + jws_token);
+        httpRequest.header("Authorization", "Bearer " + access_token);
         HttpResponse userinfoResp = httpRequest.send();
-        JSONObject wxUser = JSON.parseObject(userinfoResp.charset("utf-8").bodyText());
-        log.info("GithubUser = " + wxUser);
+        String text = userinfoResp.charset("utf-8").bodyText();
+        log.info("Github.获取用户结果 = " + text);
+        JSONObject wxUser = JSON.parseObject(text);
         wxUser.put("username", wxUser.getString("login"));
         wxUser.put("userId", wxUser.getString("id"));
         wxUser.put("avatar", wxUser.getString("avatar_url"));

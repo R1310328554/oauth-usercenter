@@ -1,5 +1,5 @@
-
 package com.lk.learn.oauth.usercenter.controller;
+
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.lk.learn.oauth.usercenter.controller.BaseController;
@@ -21,13 +21,13 @@ public class WeiboController extends BaseController {
      */
     @RequestMapping("/login")
     public void login(@RequestParam("code") String code, HttpServletResponse response) throws IOException {
-        log.info("微博 .callback");
+        log.info("微博授权码回调，code： " + code);
         String redirect = "https://api.weibo.com/oauth2/access_token?client_id=973886123&client_secret=3253f16e8324a73f6ede08c7405c0bad&grant_type=authorization_code&redirect_uri=http%3A%2F%2F192.168.1.103%3A8999%2Fv1%2Fweibo%2Fuser%2Flogin&code=";
         String accessTokenUrl = redirect + code;
         HttpResponse accessTokenResp = HttpRequest.post(accessTokenUrl).send();
-        JSONObject jsonObject = JSON.parseObject(accessTokenResp.bodyText());
-        log.info("jsonObject = " + jsonObject);
-
+        String text = accessTokenResp.bodyText();
+        log.info("微博access_token回调 = " + text);
+        JSONObject jsonObject = JSON.parseObject(text);
         int statusCode = accessTokenResp.statusCode();
         if (statusCode != 200){
             int error_code = jsonObject.getInteger("error_code");
@@ -35,6 +35,7 @@ public class WeiboController extends BaseController {
             response.sendRedirect(token_callback + "/err500");
             return;
         }
+
         String access_token = jsonObject.getString("access_token");
         String uid = jsonObject.getString("uid");
         String remind_in = jsonObject.getString("remind_in");
@@ -44,30 +45,32 @@ public class WeiboController extends BaseController {
         // String getUerinfoUrl = String.format("https://api.weibo.com/2/statuses/mentions.json?access_token=%s", access_token);
         HttpResponse userinfoResp = HttpRequest.get("https://api.weibo.com/2/users/show.json?access_token="+access_token+ "&uid="+uid).send();
         String bodyText = userinfoResp.charset("utf-8").bodyText();
-        log.info("bodyText = " + bodyText);
+        log.info("微博用户信息 = " + bodyText);
         OauthUser oauthUser = JSON.parseObject(bodyText, OauthUser.class);
         oauthUser.setAvatar(oauthUser.getProfile_image_url());
         oauthUser.setUsername(oauthUser.getScreen_name());
         oauthUser.setUserId(oauthUser.getId());
-        log.info("weiboUser = " + oauthUser);
         oauthUser.setUserInfo(bodyText);
         userService.saveUser(oauthUser);
         generateCookie(response, access_token, oauthUser, "weibo");
 
+        // 返回浏览器端
         response.sendRedirect(token_callback);
     }
 
 
     @Override
-    protected JSONObject getUser(String access_token, String userId, String jws_token) {
+    protected JSONObject getUser(String userId, String access_token) {
+        System.out.println("微博.获取用户: userId = [" + userId + "], jws_token = [" + access_token + "]");
         HttpRequest httpRequest = HttpRequest.get("https://api.weibo.com/2/users/show.json?access_token=" + access_token + "&uid=" + userId);
         // HttpRequest httpRequest = HttpRequest.get("https://api.weibo.com/2/users/show.json?uid="+uid);
         httpRequest.contentType("application/json");
         httpRequest.accept("application/json");
-        httpRequest.header("Authorization", "Bearer " + jws_token);
+        httpRequest.header("Authorization", "Bearer " + access_token);
         HttpResponse userinfoResp = httpRequest.send();
-        JSONObject wxUser = JSON.parseObject(userinfoResp.charset("utf-8").bodyText());
-        log.info("weiboUser = " + wxUser);
+        String text = userinfoResp.charset("utf-8").bodyText();
+        log.info("微博.获取用户结果 = " + text);
+        JSONObject wxUser = JSON.parseObject(text);
         wxUser.put("username", wxUser.getString("login"));
         wxUser.put("userId", wxUser.getString("id"));
         wxUser.put("avatar", wxUser.getString("avatar_url"));
