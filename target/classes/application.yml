@@ -1,0 +1,62 @@
+server:
+  port: 8999
+  session:
+    cookie:
+      name: UISESSION
+  servlet:
+    context-path: /v1
+spring:
+  thymeleaf:
+    cache: false
+  security:
+    oauth2:
+      client:
+        registration:
+          custom-client:
+            client-id: R2dpxQ3vPrtfgF72
+            client-secret: fDw7Mpkk5czHNuSRtmhGmAGL42CaxQB9
+#            client-name: Auth Server
+            scope: user_info
+            provider: custom-provider
+            # 回调地址； 为什么这个地址是自身？谁处理这个回调请求？
+            redirect-uri-template: http://localhost:8082/login/oauth2/code/
+            client-authentication-method: basic
+            authorization-grant-type: authorization_code
+#          testOAuth2: // Provider ID must be specified for client registration 'testOAuth2'
+          github:
+#            homeUrl: http://localhost:8082/testOAuth2
+#            redirect-uri-template: http://localhost:8082/login/oauth2/code/
+#            client-id: R2dpxQ3vPrtfgF72
+            client-id: ee0e0710193b7cac1e68
+#            client-secret: fDw7Mpkk5czHNuSRtmhGmAGL42CaxQB9
+            client-secret: d544353486c9e083d9c7437187236e8f191c6632
+#            client-id: 063a7d4ef110e3df94c7
+#            client-secret: d453a708c6cc962ce6d721a4683fc78a67664a3a
+
+        provider:
+          custom-provider:
+            token-uri: http://localhost:8081/auth/oauth/token
+            authorization-uri: http://localhost:8081/auth/oauth/authorize
+            user-info-uri: http://localhost:8081/auth/user/me
+            user-name-attribute: name
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/aimeeTest2
+
+
+# jwt 配置
+custom:
+  jwt:
+    # header:凭证(校验的变量名)
+    header: Authorization
+    # 有效期1天(单位:s)
+    expire: 5184000
+    # secret: 秘钥(普通字符串) 不能太短，太短可能会导致报错
+    secret: 99c2918fe19d30bce25abfac8a3733ec
+    # 签发者
+    issuer: luo
+
+jjwt:
+  key: aXNsZWVfaGFoYQ==
+
+
