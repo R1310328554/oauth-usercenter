@@ -20,7 +20,7 @@ public class WeiboController extends BaseController {
          目前配置的微博的授权回调页：   http://192.168.1.103:8999/v1/weibo/user/login
      */
     @RequestMapping("/login")
-    public void login(@RequestParam("code") String code, HttpServletResponse response) throws IOException {
+    public void login(@RequestParam("code") String code, HttpServletResponse response) throws Exception {
         log.info("微博授权码回调，code： " + code);
         String redirect = "https://api.weibo.com/oauth2/access_token?client_id=973886123&client_secret=3253f16e8324a73f6ede08c7405c0bad&grant_type=authorization_code&redirect_uri=http%3A%2F%2F192.168.1.103%3A8999%2Fv1%2Fweibo%2Fuser%2Flogin&code=";
         String accessTokenUrl = redirect + code;

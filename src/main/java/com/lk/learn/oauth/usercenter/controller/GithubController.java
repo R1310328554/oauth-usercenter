@@ -18,7 +18,7 @@ public class GithubController extends BaseController {
          目前配置的Github的授权回调页：   http://192.168.1.103:8999/v1/github/user/login
      */
     @RequestMapping("/login")
-    public void login(@RequestParam("code") String code, HttpServletResponse response) {
+    public void login(@RequestParam("code") String code, HttpServletResponse response) throws Exception {
         log.info("Github授权码回调，code： " + code);
         String redirect = "https://github.com/login/oauth/access_token?client_id=ee0e0710193b7cac1e68&redirect_uri=http://192.168.1.103:8999/v1/github/user/login&client_secret=d544353486c9e083d9c7437187236e8f191c6632&code=";
         // String accessTokenUrl = String.format(redirect, code);
@@ -38,20 +38,16 @@ public class GithubController extends BaseController {
         String scope = jsonObject.getString("scope");
         String token_type = jsonObject.getString("token_type");
 
-        try {
-            OauthUser oauthUser = retrieveRemoteUser("", access_token);
-            OauthUser userByUserId = userService.findUserByUserId(oauthUser.getUserId());
-            if (userByUserId != null) {
-                // 如果已经存在， 那么 update ? ..
+        OauthUser oauthUser = retrieveRemoteUser("", access_token);
+        OauthUser userByUserId = userService.findUserByUserId(oauthUser.getUserId());
+        if (userByUserId != null) {
+            // 如果已经存在， 那么 update ? ..
 
-            } else {
-                userService.saveUser(oauthUser);
-            }
-            generateCookie(response, access_token, oauthUser, "github");
-            response.sendRedirect(token_callback);
-        } catch (Exception e) {
-            e.printStackTrace();
+        } else {
+            userService.saveUser(oauthUser);
         }
+        generateCookie(response, access_token, oauthUser, "github");
+        response.sendRedirect(token_callback);
     }
 
     @Override
