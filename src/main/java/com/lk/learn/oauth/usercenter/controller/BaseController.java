@@ -48,7 +48,7 @@ public abstract class BaseController {
 
     @RequestMapping("/getUserInfo")
     @ResponseBody
-    public JSONObject getUserInfo(@CookieValue(value = "aimee-test-token", required = false)String access_token
+    public JSONObject getUserInfo(@CookieValue(value = "aimee-test-token", required = true)String access_token
             , @CookieValue(value = "thirdType", required = false)String thirdType
             , @CookieValue(value = "uid", required = false)String uid) {
         log.info("获取用户： " + thirdType + "," + access_token);
@@ -63,8 +63,7 @@ public abstract class BaseController {
                 String userId = split[1];
                 oauthUser = userService.findUserByUserId(userId);
                 if (oauthUser == null) {
-                    JSONObject wxUser = getUser(userId, jws_token);
-                    oauthUser = wxUser;
+                    oauthUser = retrieveRemoteUser(userId, jws_token);// 数据库中没有，那么重新获取
                 }
             }
             JSONObject ret = new JSONObject();
@@ -84,7 +83,7 @@ public abstract class BaseController {
         }
     }
 
-    protected JSONObject getUser(String userId, String jws_token) {
+    protected OauthUser retrieveRemoteUser(String userId, String jws_token) {
         return null;
     }
 

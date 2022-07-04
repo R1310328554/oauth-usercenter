@@ -26,7 +26,7 @@ public class WeiboController extends BaseController {
         String accessTokenUrl = redirect + code;
         HttpResponse accessTokenResp = HttpRequest.post(accessTokenUrl).send();
         String text = accessTokenResp.bodyText();
-        log.info("微博access_token回调 = " + text);
+        log.info("微博access_token回调： " + text);
         JSONObject jsonObject = JSON.parseObject(text);
         int statusCode = accessTokenResp.statusCode();
         if (statusCode != 200){
@@ -40,17 +40,7 @@ public class WeiboController extends BaseController {
         String uid = jsonObject.getString("uid");
         String remind_in = jsonObject.getString("remind_in");
         String expires_in = jsonObject.getString("expires_in");
-        //3:刷新access_token (if need)
-        //4:获取用户信息
-        // String getUerinfoUrl = String.format("https://api.weibo.com/2/statuses/mentions.json?access_token=%s", access_token);
-        HttpResponse userinfoResp = HttpRequest.get("https://api.weibo.com/2/users/show.json?access_token="+access_token+ "&uid="+uid).send();
-        String bodyText = userinfoResp.charset("utf-8").bodyText();
-        log.info("微博用户信息 = " + bodyText);
-        OauthUser oauthUser = JSON.parseObject(bodyText, OauthUser.class);
-        oauthUser.setAvatar(oauthUser.getProfile_image_url());
-        oauthUser.setUsername(oauthUser.getScreen_name());
-        oauthUser.setUserId(oauthUser.getId());
-        oauthUser.setUserInfo(bodyText);
+        OauthUser oauthUser = retrieveRemoteUser(uid, access_token);
         userService.saveUser(oauthUser);
         generateCookie(response, access_token, oauthUser, "weibo");
 
@@ -60,21 +50,32 @@ public class WeiboController extends BaseController {
 
 
     @Override
-    protected JSONObject getUser(String userId, String access_token) {
+    protected OauthUser retrieveRemoteUser(String userId, String access_token) {
         System.out.println("微博.获取用户: userId = [" + userId + "], jws_token = [" + access_token + "]");
         HttpRequest httpRequest = HttpRequest.get("https://api.weibo.com/2/users/show.json?access_token=" + access_token + "&uid=" + userId);
         // HttpRequest httpRequest = HttpRequest.get("https://api.weibo.com/2/users/show.json?uid="+uid);
-        httpRequest.contentType("application/json");
+        //3:刷新access_token (if need)
+        //4:获取用户信息
+        // String getUerinfoUrl = String.format("https://api.weibo.com/2/statuses/mentions.json?access_token=%s", access_token);
+        /*httpRequest.contentType("application/json");
         httpRequest.accept("application/json");
-        httpRequest.header("Authorization", "Bearer " + access_token);
+        httpRequest.header("Authorization", "Bearer " + access_token); // 微博无需Authorization请求头
+        */
+
         HttpResponse userinfoResp = httpRequest.send();
         String text = userinfoResp.charset("utf-8").bodyText();
-        log.info("微博.获取用户结果 = " + text);
+        log.info("微博获取用户结果 = " + text);
         JSONObject wxUser = JSON.parseObject(text);
-        wxUser.put("username", wxUser.getString("login"));
+        wxUser.put("username", wxUser.getString("screen_name"));
         wxUser.put("userId", wxUser.getString("id"));
-        wxUser.put("avatar", wxUser.getString("avatar_url"));
-        return wxUser;
+        wxUser.put("avatar", wxUser.getString("profile_image_url"));
+        OauthUser oauthUser = wxUser.toJavaObject(OauthUser.class);
+//        OauthUser oauthUser = JSON.parseObject(bodyText, OauthUser.class);
+//        oauthUser.setAvatar(oauthUser.getProfile_image_url());
+//        oauthUser.setUsername(oauthUser.getScreen_name());
+//        oauthUser.setUserId(oauthUser.getId());
+//        oauthUser.setUserInfo(bodyText);
+        return oauthUser;
     }
 
     @RequestMapping("/cancel")

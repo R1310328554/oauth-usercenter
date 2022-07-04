@@ -33,13 +33,13 @@ public class OauthUser implements Serializable {
     //用户关注应用的时间
     private String createDate;
 
-    //昵称
+    //Github 昵称
     private String login;
 
     //昵称
     private String username;
 
-    //昵称
+    //微博昵称
     private String screen_name;
 
     //昵称
@@ -54,6 +54,7 @@ public class OauthUser implements Serializable {
     //头像
     private String avatar_url;
 
+    // github 头像
     private String profile_image_url;
 
     //
