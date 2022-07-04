@@ -30,7 +30,7 @@ public abstract class BaseController {
     @Value("${oauth.token.callback}")
     public String token_callback;
 
-    protected void generateCookie(HttpServletResponse response, String access_token, OauthUser oauthUser, String thirdTypeStr) {
+    protected void generateCookie(HttpServletResponse response, String access_token, OauthUser oauthUser, String thirdTypeStr) throws Exception {
         String jws_token = jwtUtil.createToken(access_token + TOKEN_SEPARATOP + oauthUser.getUserId());
         Cookie access_tokenCookie = new Cookie("aimee-test-token", jws_token);
         access_tokenCookie.setMaxAge(1000 * 60 * 60 * 24);
@@ -38,50 +38,35 @@ public abstract class BaseController {
         Cookie thirdType = new Cookie("thirdType", thirdTypeStr);
         thirdType.setMaxAge(1000 * 60 * 60 * 24);
         thirdType.setPath("/");
-        try {
-            response.addCookie(thirdType);
-            response.addCookie(access_tokenCookie);
-        } catch (Exception e) {
-            log.error("系统异常： ", e);
-        }
+        response.addCookie(thirdType);
+        response.addCookie(access_tokenCookie);
     }
 
     @RequestMapping("/getUserInfo")
     @ResponseBody
     public JSONObject getUserInfo(@CookieValue(value = "aimee-test-token", required = true)String access_token
             , @CookieValue(value = "thirdType", required = false)String thirdType
-            , @CookieValue(value = "uid", required = false)String uid) {
+            , @CookieValue(value = "uid", required = false)String uid) throws Exception {
         log.info("获取用户： " + thirdType + "," + access_token);
         String jws_token = "";
-        try {
-            // Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
-            jws_token = jwtUtil.parseToken(access_token).getSubject();
-            //OK, we can trust this JWT
-            String[] split = jws_token.split(TOKEN_SEPARATOP);
-            OauthUser oauthUser = new OauthUser();
-            if (split.length == 2) {
-                String userId = split[1];
-                oauthUser = userService.findUserByUserId(userId);
-                if (oauthUser == null) {
-                    oauthUser = retrieveRemoteUser(userId, jws_token);// 数据库中没有，那么重新获取
-                    userService.saveUser(oauthUser);
-                }
+        // Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+        jws_token = jwtUtil.parseToken(access_token).getSubject();
+        //OK, we can trust this JWT
+        String[] split = jws_token.split(TOKEN_SEPARATOP);
+        OauthUser oauthUser = new OauthUser();
+        if (split.length == 2) {
+            String userId = split[1];
+            oauthUser = userService.findUserByUserId(userId);
+            if (oauthUser == null) {
+                oauthUser = retrieveRemoteUser(userId, jws_token);// 数据库中没有，那么重新获取
+                userService.saveUser(oauthUser);
             }
-            JSONObject ret = new JSONObject();
-            ret.put("msg", "ok");
-            ret.put("data", oauthUser);
-            ret.put("code", 0);
-            return ret;
-        } catch (Exception e) {
-            //don't trust the JWT!
-            //e.printStackTrace();
-            log.error("系统异常： ", e);
-            JSONObject ret = new JSONObject();
-            ret.put("msg", "err");
-            ret.put("data", e);
-            ret.put("code", 500);
-            return ret;
         }
+        JSONObject ret = new JSONObject();
+        ret.put("msg", "ok");
+        ret.put("data", oauthUser);
+        ret.put("code", 0);
+        return ret;
     }
 
     protected OauthUser retrieveRemoteUser(String userId, String jws_token) {
@@ -100,7 +85,7 @@ public abstract class BaseController {
     @RequestMapping("/logout")
     @ResponseBody
     public JSONObject logout(@CookieValue(value = "aimee-test-token", required = false)String access_token
-            , @CookieValue(value = "thirdType", required = false)String thirdType, HttpServletResponse response) {
+            , @CookieValue(value = "thirdType", required = false)String thirdType, HttpServletResponse response) throws Exception{
         log.info("注销登录： access_token = [" + access_token + "], thirdType = [" + thirdType + "], response = [" + response + "]");
         Cookie access_tokenCookie = new Cookie("aimee-test-token", "");
         access_tokenCookie.setMaxAge(1000*60*60*24);
@@ -108,20 +93,12 @@ public abstract class BaseController {
         Cookie thirdTypeCookie = new Cookie("thirdType", "");
         thirdTypeCookie.setMaxAge(1000*60*60*24);
         thirdTypeCookie.setPath("/");
-        try {
-            response.addCookie(thirdTypeCookie);
-            response.addCookie(access_tokenCookie);
-            JSONObject ret = new JSONObject();
-            ret.put("msg", "ok");
-            ret.put("code", 0);
-            return ret;
-        } catch (Exception e) {
-            e.printStackTrace();
-            JSONObject ret = new JSONObject();
-            ret.put("msg", e);
-            ret.put("code", 500);
-            return ret;
-        }
+        response.addCookie(thirdTypeCookie);
+        response.addCookie(access_tokenCookie);
+        JSONObject ret = new JSONObject();
+        ret.put("msg", "ok");
+        ret.put("code", 0);
+        return ret;
     }
 
 }
