@@ -40,8 +40,16 @@ public class WeiboController extends BaseController {
         String uid = jsonObject.getString("uid");
         String remind_in = jsonObject.getString("remind_in");
         String expires_in = jsonObject.getString("expires_in");
-        OauthUser oauthUser = retrieveRemoteUser(uid, access_token);
-        userService.saveUser(oauthUser);
+
+        OauthUser oauthUser = userService.findUserByUserId(uid);
+        if (oauthUser != null) {
+            // 如果已经存在， 那么 update ? ..
+
+        } else {
+            oauthUser = retrieveRemoteUser(uid, access_token);
+            userService.saveUser(oauthUser);
+        }
+        // 生成token， 存放到cookie
         generateCookie(response, access_token, oauthUser, "weibo");
 
         // 返回浏览器端
@@ -67,9 +75,10 @@ public class WeiboController extends BaseController {
         log.info("微博获取用户结果 = " + text);
         JSONObject wxUser = JSON.parseObject(text);
         wxUser.put("username", wxUser.getString("screen_name"));
-        wxUser.put("userId", wxUser.getString("id"));
+        wxUser.put("userId", "weibo_" + wxUser.getString("id"));
         wxUser.put("avatar", wxUser.getString("profile_image_url"));
         OauthUser oauthUser = wxUser.toJavaObject(OauthUser.class);
+        oauthUser.setThirdType("weibo");
 //        OauthUser oauthUser = JSON.parseObject(bodyText, OauthUser.class);
 //        oauthUser.setAvatar(oauthUser.getProfile_image_url());
 //        oauthUser.setUsername(oauthUser.getScreen_name());

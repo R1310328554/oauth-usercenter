@@ -21,7 +21,7 @@ public class GithubController extends BaseController {
     public void login(@RequestParam("code") String code, HttpServletResponse response) {
         log.info("Github授权码回调，code： " + code);
         String redirect = "https://github.com/login/oauth/access_token?client_id=ee0e0710193b7cac1e68&redirect_uri=http://192.168.1.103:8999/v1/github/user/login&client_secret=d544353486c9e083d9c7437187236e8f191c6632&code=";
-//        String accessTokenUrl = String.format(redirect, code);
+        // String accessTokenUrl = String.format(redirect, code);
         String accessTokenUrl = redirect +  code;
         HttpRequest request = HttpRequest.post(accessTokenUrl);
         request.contentType("application/json");
@@ -32,7 +32,7 @@ public class GithubController extends BaseController {
 
         JSONObject jsonObject = JSON.parseObject(text);
         if (!"".equals(jsonObject.getString("error"))) {
-
+            //todo
         }
         String access_token = jsonObject.getString("access_token");
         String scope = jsonObject.getString("scope");
@@ -40,7 +40,13 @@ public class GithubController extends BaseController {
 
         try {
             OauthUser oauthUser = retrieveRemoteUser("", access_token);
-            userService.saveUser(oauthUser);
+            OauthUser userByUserId = userService.findUserByUserId(oauthUser.getUserId());
+            if (userByUserId != null) {
+                // 如果已经存在， 那么 update ? ..
+
+            } else {
+                userService.saveUser(oauthUser);
+            }
             generateCookie(response, access_token, oauthUser, "github");
             response.sendRedirect(token_callback);
         } catch (Exception e) {
@@ -66,10 +72,11 @@ public class GithubController extends BaseController {
         log.info("从Github获取用户的结果 = " + text);
         JSONObject wxUser = JSON.parseObject(text);
         wxUser.put("username", wxUser.getString("login"));
-        wxUser.put("userId", wxUser.getString("id"));
+        wxUser.put("userId", "github_" + wxUser.getString("id"));// 需要通过前缀区分 id ？
         wxUser.put("avatar", wxUser.getString("avatar_url"));
         wxUser.put("created_at", wxUser.getString("createDate"));
         OauthUser oauthUser = wxUser.toJavaObject(OauthUser.class);
+        oauthUser.setThirdType("github");
 //        oauthUser.setAvatar(oauthUser.getAvatar_url());
 //        oauthUser.setUserId(oauthUser.getId());
 //        oauthUser.setUsername(oauthUser.getLogin());

@@ -58,12 +58,13 @@ public abstract class BaseController {
             jws_token = jwtUtil.parseToken(access_token).getSubject();
             //OK, we can trust this JWT
             String[] split = jws_token.split(TOKEN_SEPARATOP);
-            Object oauthUser = new Object();
+            OauthUser oauthUser = new OauthUser();
             if (split.length == 2) {
                 String userId = split[1];
                 oauthUser = userService.findUserByUserId(userId);
                 if (oauthUser == null) {
                     oauthUser = retrieveRemoteUser(userId, jws_token);// 数据库中没有，那么重新获取
+                    userService.saveUser(oauthUser);
                 }
             }
             JSONObject ret = new JSONObject();

@@ -23,6 +23,10 @@ public class OauthUser implements Serializable {
 
     private String id;
 
+    /**
+     * 第三方类型： weibo、 githut、wechat、..
+     */
+    private String thirdType;
 
     //用户是否接收消息，也就是是否打开了消息开关
     private Boolean enable;
