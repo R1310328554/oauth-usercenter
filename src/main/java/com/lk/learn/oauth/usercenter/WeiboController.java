@@ -16,14 +16,6 @@ import java.security.Principal;
 @RequestMapping("/weibo/user/")
 public class WeiboController extends BaseController {
 
-
-    // 访问/securedPage， 会被转发到 ： http://localhost:8081/auth/oauth/authorize?response_type=code&client_id=R2dpxQ3vPrtfgF72&scope=user_info&state=0zaP816-tXgvmkK1O4gVuUVA8n9Q0OOlCNwpY5ukgkY%3D&redirect_uri=http://localhost:8082/login/oauth2/code/
-    @RequestMapping("/securedPage")
-    public String securedPage(Model model, Principal principal) {
-        log.info("微博 .securedPage");
-         return "securedPage";
-    }
-
     /*
          目前配置的微博的授权回调页：   http://192.168.1.103:8999/v1/weibo/user/login
      */
@@ -40,7 +32,7 @@ public class WeiboController extends BaseController {
         if (statusCode != 200){
             int error_code = jsonObject.getInteger("error_code");
             //{"request":"/oauth2/access_token","error_code":21322,"error":"redirect_uri_mismatch","error_uri":"/oauth2/access_token"}
-            response.sendRedirect("http://192.168.1.103:8080/err500");
+            response.sendRedirect(token_callback + "/err500");
             return;
         }
         String access_token = jsonObject.getString("access_token");
@@ -62,7 +54,7 @@ public class WeiboController extends BaseController {
         userService.saveUser(oauthUser);
         generateCookie(response, access_token, oauthUser, "weibo");
 
-        response.sendRedirect("http://192.168.1.103:8080");
+        response.sendRedirect(token_callback);
     }
 
 

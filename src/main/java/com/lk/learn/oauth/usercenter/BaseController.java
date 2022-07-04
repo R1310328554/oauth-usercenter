@@ -2,9 +2,11 @@ package com.lk.learn.oauth.usercenter;
 
 import com.alibaba.fastjson.JSONObject;
 import com.lk.learn.oauth.usercenter.cfg.JwtUtil;
+import com.lk.learn.oauth.usercenter.cfg.JwtUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -23,6 +25,9 @@ public abstract class BaseController {
     protected UserService userService;
     @Autowired
     protected JwtUtil jwtUtil;
+
+    @Value("${oauth.token.callback}")
+    public String token_callback;
 
     protected void generateCookie(HttpServletResponse response, String access_token, OauthUser oauthUser, String thirdTypeStr) {
         String jws_token = jwtUtil.createToken(access_token + TOKEN_SEPARATOP + oauthUser.getUserId());
@@ -104,8 +109,6 @@ public abstract class BaseController {
         try {
             response.addCookie(thirdTypeCookie);
             response.addCookie(access_tokenCookie);
-//            response.sendRedirect("http://192.168.1.103:8080");
-
             JSONObject ret = new JSONObject();
             ret.put("msg", "ok");
             ret.put("code", 0);

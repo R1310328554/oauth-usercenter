@@ -61,10 +61,8 @@ public class GithubController extends BaseController {
         userService.saveUser(oauthUser);
 
         generateCookie(response, access_token, oauthUser, "github");
-//        return "Github-securedPage";
-
         try {
-            response.sendRedirect("http://192.168.1.103:8080");
+            response.sendRedirect(token_callback);
         } catch (Exception e) {
             e.printStackTrace();
         }
