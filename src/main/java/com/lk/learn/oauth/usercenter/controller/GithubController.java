@@ -12,11 +12,10 @@ import javax.servlet.http.HttpServletResponse;
 
 @Controller
 @RequestMapping("/github/user/")
-
 public class GithubController extends BaseController {
 
     /*
-         目前配置的Github的授权回调页：   http://192.168.1.103:8999/v1/weibo/user/login
+         目前配置的Github的授权回调页：   http://192.168.1.103:8999/v1/github/user/login
      */
     @RequestMapping("/login")
     public void login(@RequestParam("code") String code, HttpServletResponse response) {
