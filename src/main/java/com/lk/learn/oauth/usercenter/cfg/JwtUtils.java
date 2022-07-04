@@ -8,8 +8,8 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.alibaba.fastjson.JSON;
-import com.lk.learn.oauth.usercenter.GithubController;
-import com.lk.learn.oauth.usercenter.OauthUser;
+import com.lk.learn.oauth.usercenter.controller.GithubController;
+import com.lk.learn.oauth.usercenter.entity.OauthUser;
 import io.jsonwebtoken.security.Keys;
 import jodd.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;

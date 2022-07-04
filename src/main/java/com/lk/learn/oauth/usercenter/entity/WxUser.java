@@ -1,4 +1,4 @@
-package com.lk.learn.oauth.usercenter;
+package com.lk.learn.oauth.usercenter.entity;
 
 /**
  * 说明：微信用户数据

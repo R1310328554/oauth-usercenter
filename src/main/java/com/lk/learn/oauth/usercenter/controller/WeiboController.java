@@ -1,16 +1,16 @@
 
-package com.lk.learn.oauth.usercenter;
+package com.lk.learn.oauth.usercenter.controller;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.lk.learn.oauth.usercenter.controller.BaseController;
+import com.lk.learn.oauth.usercenter.entity.OauthUser;
 import jodd.http.HttpRequest;
 import jodd.http.HttpResponse;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.security.Principal;
 
 @Controller
 @RequestMapping("/weibo/user/")

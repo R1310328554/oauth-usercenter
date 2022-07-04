@@ -1,4 +1,4 @@
-package com.lk.learn.oauth.usercenter;
+package com.lk.learn.oauth.usercenter.entity;
 
 import lombok.Data;
 import org.springframework.data.annotation.Id;

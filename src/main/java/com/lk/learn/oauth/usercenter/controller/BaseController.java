@@ -1,8 +1,9 @@
-package com.lk.learn.oauth.usercenter;
+package com.lk.learn.oauth.usercenter.controller;
 
 import com.alibaba.fastjson.JSONObject;
+import com.lk.learn.oauth.usercenter.entity.OauthUser;
+import com.lk.learn.oauth.usercenter.service.UserService;
 import com.lk.learn.oauth.usercenter.cfg.JwtUtil;
-import com.lk.learn.oauth.usercenter.cfg.JwtUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,4 +1,6 @@
-package com.lk.learn.oauth.usercenter;
+package com.lk.learn.oauth.usercenter.service;
+
+import com.lk.learn.oauth.usercenter.entity.OauthUser;
 
 public interface UserService {
     void saveUser(OauthUser user);

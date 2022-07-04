@@ -1,5 +1,6 @@
-package com.lk.learn.oauth.usercenter;
+package com.lk.learn.oauth.usercenter.service;
 
+import com.lk.learn.oauth.usercenter.entity.OauthUser;
 import com.mongodb.client.result.UpdateResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;

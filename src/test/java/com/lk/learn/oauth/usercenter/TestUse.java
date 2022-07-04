@@ -1,4 +1,4 @@
-package com.lk.learn.oauth.usercenter.cfg;
+package com.lk.learn.oauth.usercenter;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
